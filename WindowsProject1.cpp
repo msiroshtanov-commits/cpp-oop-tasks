@@ -3,7 +3,18 @@
 using namespace Gdiplus;
 #pragma comment(lib, "gdiplus.lib")
 
-// Функція малювання діаграми (Завдання 1)
+// Завдання 2: Функція побудови діаграми з довільними параметрами
+void DrawCustomPieChart(Graphics& g, RectF bounds, const float* percents, const Color* colors, int count) {
+    float startAngle = 0.0f;
+    for (int i = 0; i < count; ++i) {
+        float sweepAngle = (percents[i] / 100.0f) * 360.0f;
+        SolidBrush brush(colors[i]);
+        g.FillPie(&brush, bounds.X, bounds.Y, bounds.Width, bounds.Height, startAngle, sweepAngle);
+        startAngle += sweepAngle;
+    }
+}
+
+// Викликаємо функцію DrawCustomPieChart при перемальовуванні вікна
 void OnPaint(HDC hdc, RECT clientRect) {
     Graphics graphics(hdc);
     graphics.SetSmoothingMode(SmoothingModeAntiAlias);
@@ -11,32 +22,20 @@ void OnPaint(HDC hdc, RECT clientRect) {
     int width = clientRect.right - clientRect.left;
     int height = clientRect.bottom - clientRect.top;
 
-    REAL rectW = width * 0.6f;
-    REAL rectH = height * 0.5f;
-    REAL rectX = (width - rectW) / 2.0f;
-    REAL rectY = (height - rectH) / 2.0f;
+    // Прямокутник для розміщення діаграми
+    RectF bounds((REAL)(width * 0.2), (REAL)(height * 0.2), (REAL)(width * 0.6), (REAL)(height * 0.6));
 
-    SolidBrush redBrush(Color(255, 255, 0, 0));
-    SolidBrush greenBrush(Color(255, 0, 255, 0));
-    SolidBrush blueBrush(Color(255, 0, 191, 255));
-    SolidBrush textBrush(Color(255, 0, 0, 0));
+    // Масиви з довільними відсотками та кольорами для тестування
+    float percents[] = { 40.0f, 30.0f, 20.0f, 10.0f };
+    Color colors[] = {
+        Color(255, 255, 99, 71),   // Червоний / Томатний
+        Color(255, 60, 179, 113),  // Зелений
+        Color(255, 30, 144, 255),  // Блакитний
+        Color(255, 255, 215, 0)    // Жовтий
+    };
 
-    FontFamily fontFamily(L"Arial");
-    Gdiplus::Font font(&fontFamily, 12, FontStyleBold, UnitPoint);
-    StringFormat format;
-    format.SetAlignment(StringAlignmentCenter);
-    format.SetLineAlignment(StringAlignmentCenter);
-
-    // Сектор 1: 25% (90 градусів)
-    graphics.FillPie(&redBrush, rectX, rectY, rectW, rectH, 0.0f, 90.0f);
-    // Сектор 2: 65% (234 градуси)
-    graphics.FillPie(&greenBrush, rectX, rectY, rectW, rectH, 90.0f, 234.0f);
-    // Сектор 3: 10% (36 градусів)
-    graphics.FillPie(&blueBrush, rectX, rectY, rectW, rectH, 324.0f, 36.0f);
-
-    graphics.DrawString(L"25%", -1, &font, PointF(rectX + rectW * 0.75f, rectY + rectH * 0.75f), &format, &textBrush);
-    graphics.DrawString(L"65%", -1, &font, PointF(rectX + rectW * 0.25f, rectY + rectH * 0.5f), &format, &textBrush);
-    graphics.DrawString(L"10%", -1, &font, PointF(rectX + rectW * 0.85f, rectY + rectH * 0.35f), &format, &textBrush);
+    // Виклик функції Завдання 2
+    DrawCustomPieChart(graphics, bounds, percents, colors, 4);
 }
 
 // Головна віконна процедура
@@ -62,12 +61,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 // Точка входу Windows-програми
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
-    // 1. Ініціалізація GDI+
     ULONG_PTR gdiplusToken;
     GdiplusStartupInput gdiplusStartupInput;
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-    // 2. Реєстрація класу вікна
     WNDCLASSEXW wcex = { 0 };
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -75,11 +72,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszClassName = L"GDIPlusWindowClass";
+    wcex.lpszClassName = L"GDIPlusWindowClass2";
     RegisterClassExW(&wcex);
 
-    // 3. Створення та відображення вікна
-    HWND hWnd = CreateWindowW(L"GDIPlusWindowClass", L"Лабораторна робота - Завдання 1",
+    HWND hWnd = CreateWindowW(L"GDIPlusWindowClass2", L"Лабораторна робота - Завдання 2",
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 600, 400, NULL, NULL, hInstance, NULL);
 
     if (!hWnd) return FALSE;
@@ -87,14 +83,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-    // 4. Цикл повідомлень
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
-    // 5. Завершення роботи GDI+
     GdiplusShutdown(gdiplusToken);
     return (int)msg.wParam;
 }
