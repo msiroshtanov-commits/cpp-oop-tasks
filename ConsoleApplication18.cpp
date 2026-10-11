@@ -1,52 +1,35 @@
 ﻿#include <iostream>
 #include <string>
-#include <iomanip>
-#include <limits>
+#include <utility>
 using namespace std;
-const int STUDENTS = 10;
-const int SUBJECTS = 4;
-struct Student {
-    string name;
-    int grades[SUBJECTS];
-};
-bool inputStudents(Student a[], int n) {
+const int N = 13;
+bool inputArray(string a[], int n) {
     for (int i = 0; i < n; ++i) {
-        cout << "Student " << i + 1 << " name: ";
-        if (!getline(cin, a[i].name) || a[i].name.empty())
+        cout << "A[" << i + 1 << "]: ";
+        if (!getline(cin, a[i]))
             return false;
-        cout << "Grades: informatics, math, physics, programming: ";
-        for (int j = 0; j < SUBJECTS; ++j) {
-            if (!(cin >> a[i].grades[j])
-                || a[i].grades[j] < 2 || a[i].grades[j] > 5)
-                return false;
-        }
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     return true;
 }
-double averageGrade(const Student& s) {
-    int sum = 0;
-    for (int j = 0; j < SUBJECTS; ++j)
-        sum += s.grades[j];
-    return static_cast<double>(sum) / SUBJECTS;
+void printArray(const string a[], int n) {
+    for (int i = 0; i < n; ++i)
+        cout << i + 1 << ": " << a[i] << '\n';
 }
-void printStudents(const Student a[], int n) {
-    cout << "\nNo | Name | Inf | Math | Phys | Prog | Average\n";
-    cout << fixed << setprecision(2);
-    for (int i = 0; i < n; ++i) {
-        cout << i + 1 << " | " << a[i].name;
-        for (int j = 0; j < SUBJECTS; ++j)
-            cout << " | " << a[i].grades[j];
-        cout << " | " << averageGrade(a[i]) << '\n';
-    }
+void reverseArray(string a[], int n) {
+    for (int i = 0; i < n / 2; ++i)
+        swap(a[i], a[n - 1 - i]);
 }
 int main() {
-    Student students[STUDENTS];
-    cout << "Enter data for 10 students.\n";
-    if (!inputStudents(students, STUDENTS)) {
-        cerr << "Invalid name or grades. Use grades from 2 to 5.\n";
+    string a[N];
+    cout << "Enter 13 strings, one per line.\n";
+    if (!inputArray(a, N)) {
+        cerr << "Input error.\n";
         return 1;
     }
-    printStudents(students, STUDENTS);
+    cout << "\nOriginal array:\n";
+    printArray(a, N);
+    reverseArray(a, N);
+    cout << "\nReversed array:\n";
+    printArray(a, N);
     return 0;
 }
